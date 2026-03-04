@@ -35,7 +35,7 @@ export const ProductSingle = () => {
                     <div className='rating'>
 
                     
-                   {[...Array(Number(product.rating))].map((_,index)=> (
+                   {product.rating && [...Array(Number(product.rating))].map((_,index)=> (
                     <input type="radio" name="rating-2" className="mask mask-star-2 bg-orange-400" />
                    ))}
                   </div>

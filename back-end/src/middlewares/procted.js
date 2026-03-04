@@ -45,5 +45,14 @@ export const verifyAdmin = (req,res,next)=>{
 }
 
 
+export const verifyKitchen = (req,res,next)=>{
+    const kitchenEmail = process.env.KitechEmail;
+     const currentUser = req.user.email 
+
+     if(kitchenEmail !== currentUser){
+        return res.status(401).json({message:"Unauthorized - Unauthorized"});
+     }
+     next();
+}
 
 

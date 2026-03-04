@@ -1,6 +1,7 @@
 import bcryptjs from 'bcryptjs';
 import User from '../models/use.model.js';
 import {generateToken} from '../lib/generateToken.js'
+import { config } from 'dotenv';
 
 
 export const sign = async(req,res,next)=>{
@@ -91,13 +92,20 @@ export const check = async(req,res,next)=>{
 }
 
 
-export const verifyDashbord = async(_,res,next)=>{
+export const verifyDashbord = async(req,res,next)=>{
     try{
-      res.status(200).json({isAdmin:true});
+
+      if(req.user.email === process.env.AdminEmail){
+       res.status(200).json({isAdmin:true});
+      }else if(req.user.email === process.env.KitechEmail){
+        res.status(200).json({isKitchen:true});
+      }
     }catch(error){
         next(error);
     }
 }
+
+
 
 
 

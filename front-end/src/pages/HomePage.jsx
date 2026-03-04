@@ -64,7 +64,7 @@ export const HomePage = () => {
   }
 
   return (
-    <div className='relative top-[80px]'>
+    <div className='relative top-[20px]'>
          <Content>
           <motion.div
           initial={{opacity:0}}

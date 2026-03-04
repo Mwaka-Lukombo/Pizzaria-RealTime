@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Hamburger, Home, LayoutDashboard, LogOut, User, User2Icon} from 'lucide-react';
+import { ForkKnife, Hamburger, Home, LayoutDashboard, LogOut, User, User2Icon} from 'lucide-react';
 import { authStore } from '../store/authStore';
 import { Link } from 'react-router-dom';
 import { productStore } from '../store/productStore';
@@ -10,7 +10,7 @@ export const NavBar = () => {
    const {setTheme, logout} = authStore();
     const [search,setSearch] = useState("");
      const {getAllproducts,bestRatings} = productStore();
-       const { verifyAdmin,isAdmin,userAuth} = authStore();
+       const { verifyAdmin,Admin,userAuth,verifyKitchen,Kitchen} = authStore();
 
           
     
@@ -34,19 +34,21 @@ export const NavBar = () => {
 
   useEffect(()=>{
     verifyAdmin();
-  },[])
+  },[verifyAdmin])
 
+  useEffect(()=>{
+    verifyKitchen();
+  },[verifyKitchen])
 
- console.log(isAdmin)
-  
+  console.log(Kitchen)
 
 
   return (
-    <div className='fixed top-0 left-0 w-full z-10 shadow-xl'>
+    <div className=' w-full z-10 shadow-xl'>
         <div className="navbar bg-base-300 px-5 w-full h-full">
         <div className="navbar-start">
             <div className="dropdown">
-            <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">
+            <div tabIndex={0} role="button" className=" btn btn-ghost btn-circle">
                 <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5"
@@ -62,7 +64,7 @@ export const NavBar = () => {
             </div>
             <ul
                 tabIndex={0}
-                className="menu menu-sm dropdown-content bg-base-300 rounded-box z-[1] mt-3 w-52 p-2 shadow">
+                className="menu menu-sm dropdown-content bg-base-300 rounded-box z-10 mt-3 w-52 p-2 shadow">
                 <li>
                     <Link to={'/'}>
                     <Home className='size-4' />
@@ -159,10 +161,17 @@ export const NavBar = () => {
         </label>
 
       
-         {isAdmin && (
+         {Admin && (
             <Link to={'/admin'} className='flex items-center justify-center p-2 btn btn-md bg-neutral text-white hover:bg-neutral/50 mx-3'>
             <LayoutDashboard />
-            Admin
+            Dashbord
+        </Link>
+         )}
+
+         {Kitchen && (
+            <Link to={'/kitchen'} className='flex items-center justify-center p-2 btn btn-md bg-neutral text-white hover:bg-neutral/50 mx-3'>
+            <ForkKnife />
+            Dashbord
         </Link>
          )}
       

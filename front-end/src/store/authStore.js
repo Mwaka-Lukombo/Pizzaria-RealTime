@@ -12,7 +12,8 @@ export const authStore = create((set,get) => ({
  isCheking:true,
  isLogging:false,
  isRegister:false,
- isAdmin:null,
+ Admin:false,
+ Kitchen:false,
  socket:null,
  login:async(data)=>{
    set({isLogging:true});
@@ -22,7 +23,6 @@ export const authStore = create((set,get) => ({
      set({userAuth:res.data});
      toast.success("Loggin successfully!")
      get().connectionSocket();
-     get().verifyAdmin();
    }catch(error){
      toast.error(error.response?.data?.message);
    }finally{
@@ -64,6 +64,8 @@ export const authStore = create((set,get) => ({
      toast.success("Logout successfully!");
      set({userAuth:null});
      get().disconnectSocket()
+     set({Admin:false});
+     set({Kitchen:false})
    } catch (error) {
      toast.error(error.response?.data?.message);
    }
@@ -84,9 +86,17 @@ export const authStore = create((set,get) => ({
  verifyAdmin:async()=>{
     try {
        const res = await axiosInstance.get('/auth/verifyAdmin');
-       set({isAdmin:res.data.isAdmin});
+         set({Admin:res.data});
     } catch (error) {
-      toast.error(error.response?.data?.message)
+      console.error(error.response?.data?.message)
+    }
+ },
+ verifyKitchen:async()=>{
+    try {
+      const res = await axiosInstance.get('/auth/verifyKitchen');
+      set({Kitchen:res.data.isKitchen})
+    } catch (error) {
+      console.log(error.response?.data?.message);
     }
  },
  setTheme:async(theme)=>{

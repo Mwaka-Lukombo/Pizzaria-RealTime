@@ -1,5 +1,5 @@
 import { Router } from "express";
-import {protectedRoute, verifyAdmin} from '../middlewares/procted.js';
+import {protectedRoute, verifyAdmin, verifyKitchen} from '../middlewares/procted.js';
 import { check, login, logout, sign, verifyDashbord } from "../controllers/auth.controller.js";
 
 
@@ -11,8 +11,8 @@ router.post('/login',login);
 router.post('/logout',logout);
 router.get('/check',protectedRoute,check);
 
-router.use(protectedRoute,verifyAdmin);
-router.get('/verifyAdmin',verifyDashbord)
+router.get('/verifyAdmin',protectedRoute,verifyAdmin,verifyDashbord);
+router.get('/verifyKitchen',protectedRoute,verifyKitchen,verifyDashbord);
 
 
 export default router;
