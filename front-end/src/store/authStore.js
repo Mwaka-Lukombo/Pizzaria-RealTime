@@ -73,7 +73,7 @@ export const authStore = create((set,get) => ({
  theme:localStorage.getItem("theme-guide") || "light",
  check:async()=>{
     try{
-       const res = await axiosInstance.get('/check');
+       const res = await axiosInstance.get('/auth/check');
        set({userAuth:res.data});
        get().connectionSocket();
        get(). verifyAdmin()
