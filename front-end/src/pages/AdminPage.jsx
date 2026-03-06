@@ -1,24 +1,51 @@
-import { Bike, Box, Hamburger, Home, ListOrdered, MessageCircleMore, Motorbike, PizzaIcon, Trash, Users } from 'lucide-react'
+import { 
+  Bike, 
+  Box, 
+  Hamburger, 
+  Home, 
+  ListOrdered, 
+  MessageCircleMore, 
+  Motorbike, 
+  PizzaIcon, 
+  Trash, 
+  Users 
+} from 'lucide-react'
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { adminStore } from '../store/adminStore';
 import {authStore} from '../store/authStore';
 
+
+import {LoaderComponent} from '../components/LoaderComponent'
+import {AdminSkeleton} from '../components/skeletons/AdminSkeleton';
 
 
 export const AdminPage = () => {
   const [home,setHome] = useState(true);
    const [products,setProducts] = useState(false);
     const [messages,setMessages] = useState(false);
+     const [nameProduct,setName] = useState("");
+      const [category,setCategory] = useState("");
+       const [price,setPrice] = useState("");
+        const [image,setImage] = useState("");
+         const [ingredients,setIngredients] = useState([]);
 
        const {
+        isCreate,
+        isGetingUsers,
         getStats,
         totalUsers,
         totalProducts,
         getAllUsers,
         users,
-        deleteUser
+        deleteUser,
+        productsAll,
+        getAllProducts,
+        createProduct,
+        deleteProduct
       } = adminStore();
+
+    
 
       const {socket} = authStore();
 
@@ -29,8 +56,12 @@ export const AdminPage = () => {
        },[getStats])
 
        useEffect(()=>{
-         getAllUsers();
+         getAllUsers(1);
        },[getAllUsers]);
+
+       useEffect(()=>{
+        getAllProducts();
+       },[getAllProducts]);
 
 
        useEffect(()=>{
@@ -39,8 +70,12 @@ export const AdminPage = () => {
           adminStore.setState((state) => ({
             totalUsers:total
           }))
+        })
 
-          console.log(total)
+        socket.on("totalProducts",(totalProd)=>{
+          adminStore.setState({
+            totalProducts:totalProd
+          })
         })
         
         return ()=>{
@@ -48,12 +83,49 @@ export const AdminPage = () => {
         }
        },[socket])
 
+              
+       if(isGetingUsers){
+        return <AdminSkeleton />
+       }
 
        const handleDelete = (id)=>{
 
         if(!confirm("Delete this user?")) return;
         deleteUser(id);
        }
+
+       const handleDeleteProduct = (id)=>{
+          if(!confirm("Delete this product?")) return;
+          deleteProduct(id);
+       }
+
+        const FormClean = ()=>{
+          setName("");
+          setPrice("");
+          setImage("");
+          setIngredients("");
+        }
+       const handleSubmit = (e)=>{
+        e.preventDefault();
+
+        const newProduct = {
+          name:nameProduct,
+          price,
+          category,
+          rating:"",
+          image,
+          ingredients
+        }
+
+        createProduct(newProduct);
+        FormClean();
+        
+
+       }
+
+
+       
+
 
   return (
     <div className=''>
@@ -102,7 +174,7 @@ export const AdminPage = () => {
           </div>
       </div>
 
-      <div className='col-span-8 h-screen px-6 relative left-[250px]'>
+      <div className='col-span-8 min-h-screen px-6 relative left-[250px]'>
         <div className='w-[100%] '>
             <div className='grid grid-cols-3 gap-3 my-5 items-center justify-center'>
               
@@ -175,7 +247,7 @@ export const AdminPage = () => {
               </thead>
               <tbody>
                 
-              {Array.isArray(users) && users.map((user,index) => (
+              {Array.isArray(users.users) && users.users.map((user,index) => (
                 <tr>
                   <th>{index+=1}</th>
                   <td>{user.fullName}</td>
@@ -194,6 +266,24 @@ export const AdminPage = () => {
 
               </tbody>
             </table>
+            <div className='flex items-center justify-center my-3 mx-auto'>
+                <div className="join">
+                {[...Array(users.totalPages)].map((_,index)=> {
+                  const numberPage = index+=1;
+                  
+                  return(
+                    <input
+                    className="join-item btn btn-square"
+                    type="radio"
+                    name="options"
+                    aria-label={numberPage}
+                    checked={numberPage === users.currentPage || numberPage == 1}
+                    onClick={() => getAllUsers(numberPage)} 
+                    />
+                  )
+                })}
+              </div>
+            </div>
           </div>
         </div>
         </>
@@ -204,7 +294,7 @@ export const AdminPage = () => {
            <div className='w-full  mx-auto '>
              <div className='max-w-[700px] px-5 w-[95%] rounded-xl  mx-auto bg-base-300 '>
                <div className='p-3'></div>
-               <form>
+               <form onSubmit={handleSubmit}>
                  <div className='flex gap-2'>
                    <div className='form-control w-[calc(100%/2)]'>
                    <div className='label'>
@@ -214,6 +304,8 @@ export const AdminPage = () => {
                    <input type="text" 
                    className='input input-bordered flex-1'
                    placeholder='Pizza, Hamburguer'
+                   onChange={(e) => setName(e.target.value)}
+                   value={nameProduct}
                    /> 
                  </div>
 
@@ -221,12 +313,13 @@ export const AdminPage = () => {
                   <div className='label'>
                      <div className='label-text'>Category:</div> 
                   </div>
-                  <select className='select select-bordered flex-1'>
+                  <select className='select select-bordered flex-1' onChange={(e)=> setCategory(e.target.value)} value={category}>
                     <option value="">Select the category</option>
                     <option value="carne">Carne</option>
                     <option value="pizza">Pizza</option>
                     <option value="hamburguer">Hamburguer</option>
                     <option value="carne">Massa</option>
+                    <option value="pao">Pao</option>  
                   </select>
                  </div>
                  </div>
@@ -240,6 +333,8 @@ export const AdminPage = () => {
                   className='input input-bordered pr-5'
                   placeholder='R$1300'
                   min={1}
+                  onChange={(e) => setPrice(e.target.value)}
+                  value={price}
                   />
                  </div>
 
@@ -250,6 +345,8 @@ export const AdminPage = () => {
                     <input type="text"
                     className='input input-bordered' 
                     placeholder='http://pizza.jpg'
+                    onChange={(e) => setImage(e.target.value)}
+                    value={image}
                     />
                  </div>
 
@@ -261,11 +358,15 @@ export const AdminPage = () => {
                    <input type="text" 
                    className='input input-bordered'
                    placeholder='Peperone,queijo,chiken'
+                   onChange={(e) => setIngredients(e.target.value)}
+                   value={ingredients}
                    />
                  </div>
 
                  <div className='my-3 mb-3'>
-                   <button className="btn btn-neutral w-full mb-5">Create</button>
+                   <button className="btn btn-neutral w-full mb-5" disabled={isCreate}>
+                    {!isCreate ? "Create" : <LoaderComponent />}
+                   </button>
                  </div>
                </form>
              </div>
@@ -277,27 +378,65 @@ export const AdminPage = () => {
                     <thead>
                       <tr>
                         <th></th>
+                        <th>Image</th>
                         <th>Name</th>
                         <th>Category</th>
                         <th>Price</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {/* row 1 */}
-                      <tr>
-                        <th>1</th>
-                        <td>Pizza Mexicana</td>
-                        <td>Pizza</td>
-                        <td>R$1300</td>
+                      {/*table */}
+
+                      {Array.isArray(productsAll.products) && productsAll.products.map((product,index) => (
+                        <>
+                        <tr>
+                        <th>{index+=1}</th>
+                        <th>
+                          <div className='w-[50px] h-[50px] border border-[#ccc] rounded-full'>
+                            <img src={product.image}
+                            alt={product.name}
+                            className='w-full h-full bg-contain rounded-full bg-no-repeat'
+                            onClick={<Navigate to={`${product.image}`} />}
+                            />
+                          </div>
+                        </th>
+                        <td>{product.name}</td>
+                        <td>{product.category}</td>
+                        <td>R$ {product.price}</td>
                         <td>
-                          <button className="btn btn-md bg-error flex items-center justify-center">
+                          <button onClick={() => handleDeleteProduct(product._id)} className="btn btn-md bg-error flex items-center justify-center">
                             <Trash />
                           </button>
                         </td>
                       </tr>
+                      </>
+                      ))}
+                      
+                      
                      
                     </tbody>
                   </table>
+                  
+                  <div className='max-w-lg flex items-center justify-center mx-auto my-2'>
+                      <div className="join">
+                        {[...Array(productsAll.totalPages)].map((_,index)=> {
+                          const numberPage = Number(index+=1);
+
+                          return(
+                            <input 
+                            className="join-item btn btn-square" 
+                            type="radio" 
+                            name="options" 
+                            aria-label={numberPage}
+                            checked={numberPage == productsAll.currentPage || numberPage == 1}
+                            onClick={()=> getAllProducts(numberPage)}
+                            />
+                        
+                          )
+                        })}
+                      </div>
+                  </div>
+                
                 </div>
             </div>
            </div>

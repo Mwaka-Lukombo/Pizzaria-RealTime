@@ -1,5 +1,5 @@
 import Router from 'express';
-import { deleteUser, getAllStats, getAllUsers } from '../controllers/admin.controller.js';
+import { deleteUser, getAllProducts, getAllStats, getAllUsers } from '../controllers/admin.controller.js';
 import { protectedRoute, verifyAdmin } from '../middlewares/procted.js';
 
 
@@ -10,6 +10,7 @@ router.use(protectedRoute);
 
 router.get('/stats',verifyAdmin,getAllStats);
 router.get('/users',verifyAdmin,getAllUsers);
+router.get('/products',verifyAdmin,getAllProducts);
 router.delete('/user/:id',verifyAdmin,deleteUser);
 
 

@@ -8,7 +8,7 @@ export const productStore = create((set,get)=> ({
  isCreating:false,
  isLoadingBest:false,
  isLoadingAllproducts:false,
- products:[],
+ products:{},
  product:{},
  bests:[],
  getAllproducts:async(category= '', page)=>{
@@ -16,6 +16,7 @@ export const productStore = create((set,get)=> ({
   try{
       const res = await axiosInstance.get(`/product?category=${category}&&page=${page}&&limit=4`);
       set({products:res.data});
+      console.log(res.data)
     }catch(error){
       toast.error(error.response?.data?.message);  
     }finally{

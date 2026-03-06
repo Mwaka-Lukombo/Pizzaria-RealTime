@@ -9,7 +9,7 @@ const productSchema = new mongoose.Schema({
   price:{type:String,required:true},
   rating:{type:String,default:""},
   image:{type:String,required:true},
-  ingredients:[{type:String,required:true}]
+  ingredients:[{type:String}]
 },{
     timestamps:true
 })

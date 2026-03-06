@@ -27,7 +27,7 @@ export const HomePage = () => {
 
   useEffect(()=>{
     let category
-    getAllproducts({category});
+    getAllproducts('',1);
   },[getAllproducts])
 
   useEffect(()=>{
@@ -50,7 +50,7 @@ export const HomePage = () => {
   },[socket])
 
   
-
+console.log(products)
   
   const handleUpdate = (id,value)=>{
     if(!value) return;
@@ -133,7 +133,7 @@ export const HomePage = () => {
           </div>
           <div className='grid md:grid-cols-4 gap-3'>
 
-              {products.products?.map((product) => (
+              {Array.isArray(products.products) && products.products.map((product) => (
                  <Link key={product._id} to={`/product/${product._id}`} className='col-span-1 bg-base-300 shadow-xl rounded-xl border border-[#ccc] 
               transition delay-150 duration-300 ease-in-out hover:-translate-y-1 md:hover:scale-110 
               '>
@@ -207,7 +207,7 @@ export const HomePage = () => {
                         name="options"
                         aria-label={pageNumber}
                         checked={products.currentPage === pageNumber || pageNumber == 1}
-                        onClick={()=> getAllproducts(_,pageNumber)}
+                        onClick={()=> getAllproducts("",pageNumber)}
                         readOnly
                         />
                         </div>

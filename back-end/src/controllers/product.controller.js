@@ -9,8 +9,9 @@ import {io} from '../lib/socket.io.js';
 export const createProduct = async(req,res,next)=>{
       const {name,category,price,rating,image, ingredients} = req.body 
 
+
       try {
-        if(!name || !category || !price || !ingredients || !image){
+        if(!name || !category || !price  || !image){
            return res.status(400).json({message:"All fields are required!"});
         }
 
@@ -30,6 +31,10 @@ export const createProduct = async(req,res,next)=>{
         })
         
         await newProduct.save();
+
+        //realTimeCount
+        const totalProducts = await Product.countDocuments();
+        io.emit("totalProducts",totalProducts);
 
         res.status(201).json(newProduct)
       } catch (error) {
@@ -170,11 +175,13 @@ export const deleteProduct = async(req,res,next)=>{
     
     if(!id) return;
 
-   const product = await Product.findByIdAndDelete(id);
+    const product = await Product.findByIdAndDelete(id);
     
-   if(!product){
-    return res.status(404).json({message:"Product not found!"});
-   }
+    if(!product) return res.status(400).json({message:"Product not found!"});
+    //realTimeCount
+        const totalProducts = await Product.countDocuments();
+        io.emit("totalProducts",totalProducts);
+
     res.status(200).json({message:"Product as delected!"});
    } catch (error) {
     next(error);
