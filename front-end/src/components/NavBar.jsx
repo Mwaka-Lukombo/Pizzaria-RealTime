@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ForkKnife, Hamburger, Home, LayoutDashboard, LogOut, User, User2Icon} from 'lucide-react';
+import { ForkKnife, Hamburger, Home, LayoutDashboard, LogOut, Motorbike, Send, Trash, User, User2Icon, X} from 'lucide-react';
 import { authStore } from '../store/authStore';
 import { Link } from 'react-router-dom';
 import { productStore } from '../store/productStore';
@@ -11,6 +11,7 @@ export const NavBar = () => {
     const [search,setSearch] = useState("");
      const {getAllproducts,bestRatings} = productStore();
        const { verifyAdmin,Admin,userAuth,verifyKitchen,Kitchen} = authStore();
+        const [showCartSide,setCardSide] = useState(false);
 
           
     
@@ -40,10 +41,61 @@ export const NavBar = () => {
     verifyKitchen();
   },[verifyKitchen])
 
-  console.log(Kitchen)
+  const cards = 3;
+
 
 
   return (
+    <>
+     {showCartSide && (
+        <div className='w-full md:w-[350px] h-screen shadow-xl bg-base-200 overflow-y-auto fixed top-0 right-0 z-50 p-6 transition-all'>
+            <div className='flex items-center justify-start'>
+                <button onClick={()=> setCardSide((prev) => !prev)} className="btn btn-md bg-neutral hover:bg-neutral-900 shadow-xl">
+                    <X className='text-white font-bold' />
+                </button>
+            </div>
+
+            <div className='my-5'>
+
+                <div className='mb-3 flex flex-col items-center justify-center'>
+                    <h2 className='text-3xl md:text-xl label-text font-bold'>Your'e orders</h2>
+                    <Hamburger className='size-16 md:size-6 text-orange-400' />
+                </div>
+             
+                {[...Array(cards)].map((_,index) => (
+                    <div className='w-full md:h-[290px] p-3 bg-base-300 rounded-xl shadow-xl border border-[#cccc]
+                    mb-2'>
+                    <div className='w-full md:h-[120px]'>
+                        <img src="images/5_pizzas_com_sabores_diferentoes_para_surpreender_seus_clientes_1.jpg"
+                        className='w-full h-full bg-cotain rounded-xl'  
+                        />
+                    </div>
+
+                    <div className='p-2 flex flex-col items-center justify-center'>
+                        <h2>Pizza de Atum</h2>
+                        <h4>R$1300 <b>MT</b></h4>
+                        <p>Quantity 2</p>
+                    </div>
+
+                    <div className='flex items-center justify-center'>
+                        <button className='btn btn-error'>
+                        <Trash className='text-white' />
+                        </button>
+                    </div>
+
+                </div>
+                ))}
+
+                <div>
+                    <button className='w-full h-[45px] btn btn-neutral flex items-center justify-center'>
+                        <span className='opacity-[0.99px]'>Order</span> 
+                        <Motorbike className='animate-pulse' />
+                    </button>
+                </div>
+             
+            </div>
+        </div>
+     )}
     <div className=' w-full z-10 shadow-xl'>
         <div className="navbar bg-base-300 px-5 w-full h-full">
         <div className="navbar-start">
@@ -69,6 +121,13 @@ export const NavBar = () => {
                     <Link to={'/'}>
                     <Home className='size-4' />
                     Homepage
+                    </Link>
+                </li>
+                <li>
+                    <Link to={'/orders'}>
+                     <Motorbike className='size-4' />
+                     Orders 
+                     
                     </Link>
                 </li>
                 <li>
@@ -119,7 +178,7 @@ export const NavBar = () => {
                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             </button>
-            <button className="btn btn-ghost btn-circle">
+            <button onClick={()=> setCardSide((prev) => !prev)} className="btn btn-ghost btn-circle">
             <div className="indicator">
                 <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -133,7 +192,7 @@ export const NavBar = () => {
                     strokeWidth="2"
                     d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
-                <span className="badge badge-xs badge-primary indicator-item"></span>
+                <span className="badge badge-xs badge-primary indicator-item">12</span>
             </div>
             </button>
 
@@ -178,5 +237,6 @@ export const NavBar = () => {
         </div>
         </div>
     </div>
+    </>
   )
 }
