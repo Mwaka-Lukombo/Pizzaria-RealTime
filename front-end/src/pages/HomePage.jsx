@@ -1,4 +1,4 @@
-import React,{useEffect, useState} from 'react';
+import React,{useEffect, useState,useLayoutEffect} from 'react';
 import { Content } from '../components/Content';
 import { Link } from 'react-router-dom'
 import { CookieIcon, HamburgerIcon, Pizza } from 'lucide-react';
@@ -50,7 +50,8 @@ export const HomePage = () => {
   },[socket])
 
   
-console.log(products)
+  
+
   
   const handleUpdate = (id,value)=>{
     if(!value) return;

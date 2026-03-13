@@ -1,5 +1,5 @@
 import Router from 'express'
-import { createCart, createOder, getOrders, getSingleCart, getSingleOrder } from '../controllers/order.controller.js';
+import {  acceptOrder, createOder, getOrders, getSingleOrder, paidOrder } from '../controllers/order.controller.js';
 import { protectedRoute } from '../middlewares/procted.js';
 
 
@@ -13,7 +13,8 @@ router.use(protectedRoute);
 router.post('/',createOder);
 router.get('/',getOrders);
 router.get('/Single',getSingleOrder);
-
+router.patch('/:id',acceptOrder);
+router.patch('/payment/:id',paidOrder);
 
 
 

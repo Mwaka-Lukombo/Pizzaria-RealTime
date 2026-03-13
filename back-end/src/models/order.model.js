@@ -26,8 +26,15 @@ const orderSchema = new mongoose.Schema({
     default:"pending"
   },
   payment:{
-    paid:Boolean,
-    method:String
+    type:Boolean,
+    default:false
+  },
+  method:{
+    type:String,
+    enum:{
+      values:['Visa Card','M-pesa','E-mola','M-kesh'],
+      message:"Payment not supported"
+    }
   },
   location:String
 },{
@@ -44,7 +51,7 @@ const cartSchema = new mongoose.Schema({
     ref:"products"
    },
    name:String,
-   price:Number,
+   price:String,
    quantity:Number,
    image:String
 },{

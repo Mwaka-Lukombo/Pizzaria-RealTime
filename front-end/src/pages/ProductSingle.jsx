@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom'
 import { productStore } from '../store/productStore'
 import { orderStore } from '../store/oderStore'
 import toast from 'react-hot-toast'
+import { cartStore } from '../store/cartStore'
 
 export const ProductSingle = () => {
 
@@ -14,13 +15,8 @@ export const ProductSingle = () => {
         quantity,
         setQuantity
       ] = useState(0);
-       const {
-        createOrder,
-        isLoading,
-        createCart,
-        isCart
-      } = orderStore()
 
+      const {createCart,isCreate} = cartStore();
 
   useEffect(()=>{
     getSingleProduct(id);
@@ -29,24 +25,13 @@ export const ProductSingle = () => {
 
   const handleSubmit = (e)=>{
     e.preventDefault();
-    
-    const {_id:productId,name,price,image} = product
-
-     const items = [
-      {
-       productId,
-       name,
-       price,
-       image,
-       quantity
-      }
-     ]
+  
 
      if(!quantity) {
        return toast.error("Put the quantity!");
      }
 
-    createCart(items)
+    createCart({...product,quantity})
     setQuantity("");
   }
 
@@ -106,15 +91,15 @@ export const ProductSingle = () => {
                   </div>
 
                   <div className='my-2'>
-                  <button className=" btn btn-neutral w-full" disabled={isLoading}>
-                      {!isLoading ? 
+                  <button className=" btn btn-neutral w-full" disabled={isCreate}>
+                      {!isCreate ? 
                       <div>
                        
                       <ShoppingCart />
                       </div> : 
                       <div>
-                        Seding...
-                        <Motorbike className='size-6 animate-pulse' />
+                        
+                        <ShoppingCart className='size-6 animate-pulse' />
                       </div>
                       }
                   </button>

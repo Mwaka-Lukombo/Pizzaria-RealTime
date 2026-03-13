@@ -17,7 +17,12 @@ export const createOder = async (req, res, next) => {
     return acc + item.price * item.quantity
    },0);
 
-   
+   const order = await Order.findOne({userId,items});
+
+
+   if(order){
+    return res.status(400).json({message:"Order sending successfully!"})
+   }
 
    const newOrder = new Order( {
     userId,
@@ -40,63 +45,6 @@ export const createOder = async (req, res, next) => {
     }
   
 };
-
-export const createCart = async(req,res,next)=>{
-     const {productId,name,price,image,quantity} = req.body 
-      const {id:userId} = req.user 
-
-      if(!name || !price || !image || !quantity){
-        return res.status(400).json({message:"All fields are required!"})
-      }
-
-
-      try {
-
-        const cartProduct = await Cart.findOne({name,price});
-
-        if(cartProduct){
-          return res.status(400).json({message:"Product already exits!"});
-        }
-
-        const newCart = new Cart( {
-          userId,
-          productId,
-          name,
-          price,
-          quantity,
-          image
-        }
-        )
-
-
-        
-
-        await newCart.save();
-
-        res.status(201).json(newCart);
-        
-      } catch (error) {
-        next(error)
-      }
-}
-
-export const getSingleCart = async(req,res,next)=>{
-  const {id} = req.user 
-
-
-  try {
-     
-    if(!mongoose.isValidObjectId(id)){
-      return res.status(400).json({message:"Put one valid id"});
-    }
-
-    const cart = await Cart.find({userId:id});
-
-    res.status(200).json(cart);
-  } catch (error) {
-    next(error);
-  }
-}
 
 export const getSingleOrder = async(req,res,next)=>{
    const {id} = req.user
@@ -136,6 +84,93 @@ export const getOrders = async(req,res,next)=>{
         currentPage:Number(page)
       });
    } catch (error) {
+     next(error)
+   }
+}
+
+
+//manipulation de order
+
+export const acceptOrder = async(req,res,next) => {
+    const {id} = req.params 
+
+    try{
+       if(!mongoose.isValidObjectId(id)){
+         return res.status(400).json({message:"Invalid id!"})
+       }
+
+       const order = await Order.findByIdAndUpdate(id,{status:"accepted"}, {new:true});
+
+       if(!order){
+         return res.status(404).json({message:"Product not found!"});
+       }
+
+       res.status(200).json({accepted:true});
+       
+    }catch(error){
+       next(error)
+    }
+}
+
+
+
+export const paidOrder = async(req,res,next)=>{
+   const {id} = req.params 
+    const {userId} = req.user 
+     const {amount, method} = req.body
+
+     const validMethods = ['Visa Card','M-pesa','E-mola','M-kesh'];
+     
+     
+     try{
+
+       if(!amount){
+         return res.status(400).json({message:"Put the payment!"});
+       }
+
+       if(!method){
+         return res.status(400).json({message:"Select the payment method!"});
+       }
+
+        const order = await Order.find({_id:id});
+          
+
+         order.map((order)=> {
+            if(amount < order.totalAmount){
+             return res.status(400).json({message:"$ the cash not corresponde to de account"})
+            }
+         });
+
+         if(!validMethods.includes(method)){
+           return res.status(400).json({message:"Invalid method payment!"})
+         }
+
+      //update in database
+       await Order.findByIdAndUpdate(id,{payment:true,method}, {new:true});
+        
+       res.status(200).json(order);
+     }catch(error){
+      next(error)
+     }
+}
+
+
+
+
+export const isDelivered = async(req,res,next)=>{
+  const {id} = req.params 
+
+   try{
+    
+     if(!mongoose.isValidObjectId(id)){
+       return res.status(400).json({message:"Invalid id!"})
+     }
+
+     const order = await Order.findByIdAndUpdate(id, {status:"sending"}, {new:true})
+     
+     res.status(200).json(order);
+     
+   }catch(error){
      next(error)
    }
 }

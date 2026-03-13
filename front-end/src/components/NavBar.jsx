@@ -1,22 +1,74 @@
 import React, { useEffect, useState } from 'react';
-import { ForkKnife, Hamburger, Home, LayoutDashboard, LogOut, Motorbike, Send, Trash, User, User2Icon, X} from 'lucide-react';
+import { Car, ForkKnife, Hamburger, Home, LayoutDashboard, LogOut, Motorbike, Send, Trash, User, User2Icon, X} from 'lucide-react';
 import { authStore } from '../store/authStore';
 import { Link } from 'react-router-dom';
 import { productStore } from '../store/productStore';
+import { cartStore } from '../store/cartStore';
+import { orderStore } from '../store/oderStore';
 
 export const NavBar = () => {
  const [dark,setDarkMode] = useState(false);
   const [showForm,setShowForm] = useState(false);
    const {setTheme, logout} = authStore();
     const [search,setSearch] = useState("");
-     const {getAllproducts,bestRatings} = productStore();
-       const { verifyAdmin,Admin,userAuth,verifyKitchen,Kitchen} = authStore();
+      const [items,setItems] = useState([]);
+        const [manyIds,setManyIds] = useState([]);
+         const [manyNames,setManyNames] = useState([]);
+
+     const {
+        getAllproducts,
+        bestRatings
+    } = productStore();
+
+       const { 
+        verifyAdmin,
+        Admin,
+        userAuth,
+        verifyKitchen,
+        Kitchen,
+        socket
+       } = authStore();
         const [showCartSide,setCardSide] = useState(false);
+          const cards = 3;
+
+
+          const {
+            isDeleting,
+            getCart,
+            Cart,
+            deleteCart,
+            deleteMany
+        } = cartStore();
+
+        const {
+            createOrder,
+            getOrderSingle,
+            Order
+        } = orderStore();
 
           
     
   let isDark = dark ? "dark" : "light";
 
+
+  useEffect(()=>{
+    verifyAdmin();
+  },[verifyAdmin])
+
+  useEffect(()=>{
+    verifyKitchen();
+  },[verifyKitchen]);
+
+  useEffect(()=>{
+   getCart();
+  },[userAuth?._id]);
+
+  useEffect(()=>{
+   getOrderSingle();
+  },[getOrderSingle])
+
+  
+  
   const handleTheme = ()=>{
     setDarkMode((prev) => !prev)
     setTheme(isDark)
@@ -33,15 +85,24 @@ export const NavBar = () => {
      bestRatings(search)
   }
 
-  useEffect(()=>{
-    verifyAdmin();
-  },[verifyAdmin])
+  const handleDelete = (id)=>{
+    deleteCart(id);
+  }
 
-  useEffect(()=>{
-    verifyKitchen();
-  },[verifyKitchen])
 
-  const cards = 3;
+const handleOrder = ()=>{
+    createOrder(Cart);
+    deleteMany();
+//   Cart.map((value)=> {
+    
+//     if(manyNames.length >= 1) return;
+//     setManyNames((prev)=> [...prev,value.name])
+//     setManyIds((prev)=> [value.userId])
+//   })
+
+}
+
+
 
 
 
@@ -58,27 +119,44 @@ export const NavBar = () => {
             <div className='my-5'>
 
                 <div className='mb-3 flex flex-col items-center justify-center'>
-                    <h2 className='text-3xl md:text-xl label-text font-bold'>Your'e orders</h2>
-                    <Hamburger className='size-16 md:size-6 text-orange-400' />
+                    {Cart.length > 0 ? <h2 className='text-3xl md:text-xl label-text font-bold'>Your'e orders</h2> :
+                    <h2 className='text-3xl md:text-lg label-text'>{Order.length <= 0 && <span>Dont have any product!</span> } </h2>
+                    }
+
+                    {Order.length <= 0 ? <Hamburger className='size-16 md:size-6 text-orange-400' /> : 
+                    <>
+                    <div className='flex items-center justify-center flex-col'>
+                            <h2>Your're have orders in the kitchen</h2>
+                            <p>Please wait our <Link to={'/orders'} className='underline text-blue-400'>see theem</Link></p>
+                        </div>
+                    
+                    <div className='flex items-center justify-center flex-col'>
+                        <Hamburger className='size-12 my-3 text-orange-400 animate-pulse' />
+                        <progress className="progress progress-error w-56"></progress>
+                    </div>
+                    </>
+                    }
+                    
                 </div>
              
-                {[...Array(cards)].map((_,index) => (
+                {Array.isArray(Cart) && Cart.map((cart) => (
                     <div className='w-full md:h-[290px] p-3 bg-base-300 rounded-xl shadow-xl border border-[#cccc]
                     mb-2'>
                     <div className='w-full md:h-[120px]'>
-                        <img src="images/5_pizzas_com_sabores_diferentoes_para_surpreender_seus_clientes_1.jpg"
+                        <img src={cart.image}
+                        alt={cart.name}
                         className='w-full h-full bg-cotain rounded-xl'  
                         />
                     </div>
 
                     <div className='p-2 flex flex-col items-center justify-center'>
-                        <h2>Pizza de Atum</h2>
-                        <h4>R$1300 <b>MT</b></h4>
-                        <p>Quantity 2</p>
+                        <h2>{cart.name}</h2>
+                        <h4>R${cart.price} <b>MT</b></h4>
+                        <p>Quantity {cart.quantity}</p>
                     </div>
 
                     <div className='flex items-center justify-center'>
-                        <button className='btn btn-error'>
+                        <button onClick={()=> handleDelete(cart._id)} className='btn btn-error'>
                         <Trash className='text-white' />
                         </button>
                     </div>
@@ -86,12 +164,19 @@ export const NavBar = () => {
                 </div>
                 ))}
 
-                <div>
-                    <button className='w-full h-[45px] btn btn-neutral flex items-center justify-center'>
-                        <span className='opacity-[0.99px]'>Order</span> 
-                        <Motorbike className='animate-pulse' />
+                {Cart.length > 0 && (
+                    <div>
+                    <button disabled={isDeleting} onClick={handleOrder} className=' w-full h-[45px] btn btn-neutral flex items-center justify-center'>
+                        {!isDeleting ? <div className='flex items-center gap-2'><span className='opacity-1'>Order</span> 
+                        <Motorbike /></div> :
+                        <div className='flex items-center gap-2'>
+                            <span className='opacity-[0.98px]'>Order</span> 
+                            <Motorbike className='animate-pulse' />
+                        </div>
+                        }
                     </button>
                 </div>
+                )}
              
             </div>
         </div>
@@ -192,7 +277,7 @@ export const NavBar = () => {
                     strokeWidth="2"
                     d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
-                <span className="badge badge-xs badge-primary indicator-item">12</span>
+                <span className="badge badge-xs badge-primary indicator-item">{Cart?.length || 0}</span>
             </div>
             </button>
 

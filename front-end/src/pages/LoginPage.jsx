@@ -31,9 +31,9 @@ export const LoginPage = () => {
 
 
   return (
-    <div data-theme="dark" className='min-h-screen w-full'>
+    <div data-theme="" className='min-h-screen w-full'>
        <div className='p-2'>
-         <div className='max-w-xl mx-auto bg-base-300 border p-3 border-[#ccc] rounded-xl relative top-40 '>
+         <div className='max-w-xl mx-auto bg-base-300 border shadow-xl p-3 border-[#ccc] rounded-xl relative top-40 '>
            <div className='flex items-center justify-center flex-col'>
                <div className='p-2'></div>
                {/* <h3 className='text-lg font-semibold leading-normal'>Login in to application</h3>

@@ -11,6 +11,7 @@ export const orderStore = create((set,get) => ({
  isCart:false,
  Menus:[],
  Orders:[],
+ Order:[],
  Cart:[],
  getMenu:async()=>{
     try {
@@ -31,6 +32,15 @@ export const orderStore = create((set,get) => ({
       set({isOrder:false});
    }
  },
+ getOrderSingle:async()=>{
+  
+   try {
+      const res = await axiosInstance.get('/order/Single');
+      set({Order:res.data})
+   } catch (error) {
+      toast.error(error.response?.data?.message);
+   }
+ },
  createOrder:async(items)=>{
     set({isLoading:true});
 
@@ -40,6 +50,7 @@ export const orderStore = create((set,get) => ({
       set((state)=> ({
          Orders:[...state.Orders,res.data]
       }));
+      set({Order:res.data});
       toast.success("Order Sending successfully!");
     } catch (error) {
       toast.error(error.response?.data?.message);
