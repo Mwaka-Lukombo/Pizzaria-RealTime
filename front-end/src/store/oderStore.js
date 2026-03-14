@@ -9,13 +9,14 @@ export const orderStore = create((set,get) => ({
  isLoading:false,
  isOrder:false,
  isCart:false,
+ isPayment:false,
  Menus:[],
  Orders:[],
  Order:[],
  Cart:[],
- getMenu:async()=>{
+ getMenu:async(search = '')=>{
     try {
-       const res = await axiosInstance.get('/product');
+       const res = await axiosInstance.get(`/product?search=${search}`);
        set({Menus:res.data});
     } catch (error) {
         toast.error(error.response?.data?.message);
@@ -72,7 +73,40 @@ export const orderStore = create((set,get) => ({
    set({isCart:false})
   }
   
- }
+ },
+
+//  payment and realTime Manipulation
+acceptOrder:async(id)=>{
+
+   try{
+      const res = await axiosInstance.patch(`/order/${id}`);
+      toast.success("Order accepted!");
+      
+   }catch(error){
+      toast.error(error.response?.data?.message);
+   }
+},
+paidOrder:async(data,id)=>{
+   set({isPayment:true});
+   try {
+       await axiosInstance.patch(`/order/payment/${id}`,data);
+       toast.success("Payment Successfully!");
+   } catch (error) {
+      toast.error(error.response?.data?.message);
+   }finally{
+      set({isPayment:false});
+   }
+},
+finishOrder:async(id)=>{
+   try {
+      if(!id) return;
+
+      await axiosInstance.patch(`/order/finish/${id}`);
+      toast.success("Order is finish!");
+   } catch (error) {
+      toast.error(error.response?.data?.message);
+   }
+}
 }));
 
 

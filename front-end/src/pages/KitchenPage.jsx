@@ -8,7 +8,9 @@ import {
   Calendar,
   User,
   Package,
-  ArrowLeft
+  ArrowLeft,
+  Search,
+  Motorbike
 } from "lucide-react";
 
 import React, { useEffect, useState } from "react";
@@ -23,8 +25,17 @@ export const KitchenPage = () => {
 
   const [page, setPage] = useState("home");
 
-     const {getMenu,Menus,getOrders,Orders,isOrder} = orderStore();
+     const {
+      getMenu,
+      Menus,
+      getOrders,
+      Orders,
+      finishOrder,
+      isOrder,
+      acceptOrder
+    } = orderStore();
        const {socket} = authStore();
+
 
      useEffect(()=>{
       getMenu();
@@ -43,15 +54,32 @@ export const KitchenPage = () => {
            Orders:[...state.Orders,newOrder]
         }))
       })
+
+      socket.on("getOrder",(order)=>{
+        console.log(order)
+        orderStore.setState((state)=> ({
+          Orders:[...state.Orders, order]
+        }))
+      })
       
       return ()=>{
-        socket.off("newOrder")
+        socket.off("newOrder");
+        socket.off("getOrder");
       }
      },[socket])
 
 
      if(isOrder){
       return <KitchenOrdersSkeleton />
+     }
+
+
+     const handleAccept = (id)=>{
+       acceptOrder(id);
+     }
+
+     const handleFinish = (id)=>{
+       finishOrder(id);
      }
 
      
@@ -141,6 +169,23 @@ export const KitchenPage = () => {
               <h2 className="text-2xl font-bold mb-4">
                 Kitchen Menu
               </h2>
+
+              <div className="mb-4">
+                <form>
+                  <div className="relative">
+                    <input type="text" 
+                      placeholder="Searching witch name..."
+                      className="w-full input input-bordered"
+                      onChange={(e)=> {
+                        getMenu(e.target.value)
+                      }}
+                      />
+                      <Search className="absolute top-3 right-2 font-bold size-5" />
+                  </div>
+                  
+
+                </form>
+              </div>
 
               <div className="grid grid-cols-3 gap-4">
 
@@ -260,21 +305,56 @@ export const KitchenPage = () => {
       <div className="bg-white shadow rounded-xl p-6 flex justify-between items-center">
         <div>
           <p className="text-sm text-gray-500">Status</p>
-          <p className="font-semibold text-orange-600">{order.status}</p>
+          <p className={`font-semibold
+          ${order.status === 'pending' && 'text-red-600'} 
+          ${order.status === 'preparing' && 'text-orange-600'}
+          ${order.status === 'accepted' || order.status === "finish" && 'text-green-600'}
+          ${order.status === 'delivered' && 'text-blue-600'}
+          `}>{order.status}</p>
         </div>
 
         <div className="flex gap-3">
-          <button className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+          {order.status === "pending" && (
+            <>
+            <button onClick={()=> handleAccept(order._id)} className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
             Accept
           </button>
 
-          <button className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">
-            Preparing
+          <button className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
+            Reject
+          </button>
+            </>
+          )}
+
+          {order.payment === true && order.status !== "finish" && (
+            <>
+            
+            <button disabled className="flex items-center px-4 py-2 text-white rounded-lg hover:cursor-not-allowed">
+            <div className="flex items-center gap-2">
+               <span className="w-[8px] h-[8px] rounded-full bg-orange-300 animate-pulse"></span>
+               <span className="w-[8px] h-[8px] rounded-full bg-orange-300 animate-pulse"></span>
+               <span className="w-[8px] h-[8px] rounded-full bg-orange-300 animate-pulse"></span>
+            </div>
           </button>
 
-          <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-            Deliver
-          </button>
+          <div>
+            <button onClick={()=> handleFinish(order._id)} className="btn w-full bg-green-300 text-white hover:bg-green-500">
+              Finish
+            </button>
+          </div>
+
+            </>
+          )}
+
+          {order.status === "finish" && (
+            <div>
+             <button className="btn btn-success text-white">
+              Delivery
+              <Motorbike className="animate-pulse" />
+             </button>
+            </div>
+          )}
+
         </div>
       </div>
       </>

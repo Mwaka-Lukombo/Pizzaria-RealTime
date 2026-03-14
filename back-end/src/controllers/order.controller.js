@@ -31,11 +31,10 @@ export const createOder = async (req, res, next) => {
     totalAmount
    })
 
-
-    
-
   await newOrder.save();
-   
+  //realTimeGetting orders
+   const orders = await Order.find();
+   io.emit("getOrder",orders);
 
    
 
@@ -117,9 +116,9 @@ export const acceptOrder = async(req,res,next) => {
 export const paidOrder = async(req,res,next)=>{
    const {id} = req.params 
     const {userId} = req.user 
-     const {amount, method} = req.body
+     const {amount, method,numberMobile,numberCard} = req.body
 
-     const validMethods = ['Visa Card','M-pesa','E-mola','M-kesh'];
+     const validMethods = ['Visa Card','mpesa','emola','M-kesh'];
      
      
      try{
@@ -130,6 +129,27 @@ export const paidOrder = async(req,res,next)=>{
 
        if(!method){
          return res.status(400).json({message:"Select the payment method!"});
+       }
+
+       if(!numberMobile){
+         return res.status(400).json({message:"Put the mobile our card number !"})
+       }else if(numberMobile.length !== 9){
+         return res.status(400).json({message:"Mobile number is invalid!"})
+       }
+
+        const numberValid = numberMobile[0].concat(numberMobile[1])
+
+        if(method === "mpesa" && !numberValid.includes("84")){
+           return res.status(400).json({message:"Number not belous Vodacom!"})
+        }
+        if(method === "emola" && !numberValid.includes("87")){
+          return res.status(400).json({message:"Number not belous Movitel!"})
+        }
+
+       if(numberCard){
+         if(numberCard.length !== 16){
+           return res.status(400).json({message:"Card number is invalid!"})
+         }
        }
 
         const order = await Order.find({_id:id});
@@ -146,7 +166,15 @@ export const paidOrder = async(req,res,next)=>{
          }
 
       //update in database
-       await Order.findByIdAndUpdate(id,{payment:true,method}, {new:true});
+       await Order.findByIdAndUpdate(id,{
+        payment:true,
+        method,
+        status:"preparing",
+        numberMobile,
+        numberCard
+       }, 
+       {new:true}
+      );
         
        res.status(200).json(order);
      }catch(error){
@@ -156,23 +184,27 @@ export const paidOrder = async(req,res,next)=>{
 
 
 
+export const finishOrder = async(req,res,next)=>{
+   const {id} = req.params
 
-export const isDelivered = async(req,res,next)=>{
-  const {id} = req.params 
-
-   try{
-    
+   try {
+     
      if(!mongoose.isValidObjectId(id)){
-       return res.status(400).json({message:"Invalid id!"})
+      return res.status(400).json({message:"Invalid id!"});
      }
 
-     const order = await Order.findByIdAndUpdate(id, {status:"sending"}, {new:true})
+     const order = await Order.findByIdAndUpdate(id,{status:"finish"}, {new:true});
+
+     if(!order){
+       return res.status(404).json({message:"Product not found!"});
+     }
+
+      res.status(200).json(order);
      
-     res.status(200).json(order);
-     
-   }catch(error){
-     next(error)
+   } catch (error) {
+     next(error);
    }
 }
+
 
 

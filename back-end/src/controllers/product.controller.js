@@ -46,20 +46,28 @@ export const createProduct = async(req,res,next)=>{
 
 export const getProducts = async (req, res, next) => {
     try {
-        let { category,page,limit } = req.query;
+        let {search, category,page,limit } = req.query;
 
           
 
             page = Math.max(1, Number(page));
             limit = Math.max(1, Number(limit));
-        let filter = {};
-        let totalFound = {}
+            let filter = {};
+            let totalFound = {}
 
         if (category) {
             filter.name = {
                 $regex: category,
                 $options: "i" 
             };
+        }
+
+
+        if(search){
+            filter.name = {
+                $regex:search,
+                $options:"i"
+            }
         }
 
         let pageCurrent = page;
