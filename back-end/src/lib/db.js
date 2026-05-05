@@ -6,7 +6,7 @@ config()
 
 async function DBconnect(){
     try{
-    const conn = await mongoose.connect("mongodb://Alphonse:Ju87Maza@cluster0-shard-00-00.tyhrl.mongodb.net:27017,cluster0-shard-00-01.tyhrl.mongodb.net:27017,cluster0-shard-00-02.tyhrl.mongodb.net:27017/?ssl=true&replicaSet=atlas-2stdmh-shard-0&authSource=admin&appName=Cluster0",{
+    const conn = await mongoose.connect(process.env.MONGO_URI,{
         serverSelectionTimeoutMS:5000
     });
     console.log("Connected: ", conn.connection.host);
