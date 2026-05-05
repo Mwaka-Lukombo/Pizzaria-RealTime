@@ -22,10 +22,12 @@ const __dirname = path.resolve();
 
 const PORT = process.env.PORT || 5000;
 
+const baseOrigin = process.env.NODE_ENV === "production" ? 
+process.env.APP_CLIENT_URL : "http://localhost:3000";
 
 
 app.use(cookiParser());
-app.use(cors({origin:"http://localhost:3000",credentials:true}));
+app.use(cors({origin:`${baseOrigin}`,credentials:true}));
 app.use(express.json());
 app.use(express.urlencoded({
     extended:true
