@@ -18,12 +18,11 @@ const PORT = process.env.PORT || 5000;
 
 
 app.use(cookiParser());
-app.use(cors({origin:"https://pizzaria-realtime-2.onrender.com",credentials:true}));
+app.use(cors({origin:"http://localhost:3000",credentials:true}));
 app.use(express.json());
 app.use(express.urlencoded({
     extended:true
 }))
-
 
 
 if(process.env.NODE_ENV === 'production'){
