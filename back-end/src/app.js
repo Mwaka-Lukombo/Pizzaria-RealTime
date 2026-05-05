@@ -8,6 +8,13 @@ import { config } from 'dotenv';
 import {app,httpServer} from './lib/socket.io.js';
 import path from 'path';
 
+
+import dns from 'dns';
+dns.setServers(['8.8.8.8', '1.1.1.1']);
+
+
+
+
 config();
 
 
