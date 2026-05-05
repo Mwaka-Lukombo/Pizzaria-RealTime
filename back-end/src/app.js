@@ -6,11 +6,16 @@ import cors from 'cors';
 import { config } from 'dotenv';
 
 import {app,httpServer} from './lib/socket.io.js';
+import path from 'path';
 
 config();
 
 
+const __dirname = path.resolve();
+
 const PORT = process.env.PORT || 5000;
+
+
 
 app.use(cookiParser());
 app.use(cors({origin:"http://localhost:3000",credentials:true}));
@@ -18,6 +23,15 @@ app.use(express.json());
 app.use(express.urlencoded({
     extended:true
 }))
+
+
+if(process.env.NODE_ENV === 'production'){
+    //Arquivos estaticos
+    app.use(express.static(path.join(__dirname,"front-end","dist")));
+    app.use(/.*/,(req,res)=>{
+        res.sendFile(path.join(__dirname,"front-end","dist"));
+    })
+}
 
 //Routes
 app.use(Routes);

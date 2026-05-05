@@ -49,7 +49,9 @@ export const authStore = create((set,get) => ({
 
    const socket = io("http://localhost:5000",({
     //options handleshake
-
+     query:{
+       userId:userAuth?._id
+     }
    }));
 
    set({socket:socket})
