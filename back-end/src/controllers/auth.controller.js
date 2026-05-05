@@ -5,45 +5,53 @@ import { config } from 'dotenv';
 
 
 export const sign = async(req,res,next)=>{
-  const {fullName, email,password} = req.body ;
+    const {fullName, email, password} = req.body;
 
-  try {
-    if(!fullName || !email || !password){
-     return res.status(400).json({message:"All fields are required!"});
+    try {
+        if(!fullName || !email || !password){
+            return res.status(400).json({message:"All fields are required!"});
+        }
+
+        if(password.length < 6){
+            return res.status(400).json({message:"Your password must be 6 characters!"});
+        }
+
+        const user = await User.findOne({email});
+
+        if(user){
+            return res.status(400).json({message:"User already exists!"}); // Mudado para 400
+        }
+
+        // Criptografar password
+        const genSalt = await bcryptjs.genSalt(12);
+        const passwordHash = await bcryptjs.hash(password, genSalt);
+
+        const newUser = new User({
+            fullName,
+            email,
+            password: passwordHash
+        });
+
+        await newUser.save();
+
+        if(newUser){
+            
+            // GERAR TOKEN ANTES de enviar a resposta
+            const token = generateToken(newUser._id, res);
+
+            return res.status(201).json({
+                _id: newUser._id,
+                fullName: newUser.fullName,
+                email: newUser.email,
+                token: token 
+            });
+        }
+        
+    } catch (error) {
+        console.error('Erro detalhado:', error);
+        next(error);
     }
-
-    if(password.length < 6){
-        return res.status(400).json({message:"Your password must be 6 characteres!"});
-    }
-
-    const user = await User.findOne({email});
-
-    if(user){
-        return res.status({message:"User already exists!"});
-    }
-
-    //cripting password
-    const genSalt = await bcryptjs.genSalt(12);
-    const passwordHash = await bcryptjs.hash(password,genSalt);
-
-    const newUser = new User({
-        fullName,
-        email,
-        password:passwordHash
-    })
-
-    await newUser.save();
-
-    if(newUser){
-     //generateToken
-     generateToken(newUser._id,res);
-    }
-    
-    res.status(201).json(newUser);
-  } catch (error) {
-    next(error);
-  }
-}
+};
 
 export const login = async(req,res,next)=>{
     const {email,password} = req.body 
